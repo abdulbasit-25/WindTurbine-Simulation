@@ -1,128 +1,99 @@
-# 🌪️ Wind Turbine Applied Physics Project
+# Wind Turbine Applied Physics Project
 
-> **Interactive 3D Engineering Simulators for Small-Scale Renewable Energy Prototyping.**
+Interactive 3D engineering prototypes for exploring the design and physics of a small-scale horizontal-axis wind turbine (HAWT).
 
-This project explores the design, aerodynamics, and concept development of a small-scale Horizontal Axis Wind Turbine (HAWT) for renewable energy generation. The repository contains a suite of interactive HTML prototypes that visualize turbine designs in various presentation styles—ranging from a futuristic dark-mode CAD simulator to a modern, realistic environmental ecosystem interface.
+The project combines renewable-energy concepts, browser-based visualization, and interface design. Each standalone HTML prototype presents the same general turbine concept through a different visual and simulation direction.
 
-This project bridges the gap between theoretical applied physics, renewable energy engineering, and interactive UI/UX design.
+Powered by [ARCHER](https://abdulbasit-archer.vercel.app/).
 
-Powered By **ARCHER**: [abdulbasit-archer.vercel.app](https://abdulbasit-archer.vercel.app/)
+## Contents
 
----
+- [What is included](#what-is-included)
+- [Run the prototypes](#run-the-prototypes)
+- [Prototype variants](#prototype-variants)
+- [Simulation model](#simulation-model)
+- [Learning goals](#learning-goals)
+- [Repository structure](#repository-structure)
+- [References](#references)
 
-## 📋 Table of Contents
+## What is included
 
-1. [Project Overview](#-project-overview)
-2. [Core Features](#-core-features)
-3. [Design Variants](#-design-variants)
-4. [Physics & Simulation Logic](#-physics--simulation-logic)
-5. [How to Use](#-how-to-use)
-6. [Repository Structure](#-repository-structure)
-7. [Educational Value](#-educational-value)
-8. [References](#-references)
+- Interactive 3D turbine visualization in the browser.
+- Wind-speed controls connected to rotor motion and telemetry.
+- Live readings for RPM, generated power, and efficiency.
+- Airflow and structural-stress visualizations.
+- Blueprint or wireframe views for inspecting the turbine structure.
+- Environmental simulation elements such as seasons, air density, lighting, terrain, trees, and weather particles.
+- Prototype cost estimation and export-sheet interactions where supported by the selected variant.
+- A presentation deck and written report for the wider project context.
 
----
+## Run the prototypes
 
-## 🎯 Project Overview
+No build tools or installation are required.
 
-The main objective of this project is to design a compact wind turbine concept suitable for low-energy applications such as residential backup power, research demonstrations, and educational prototypes.
+1. Download or clone this repository.
+2. Open one of the HTML files in a current browser such as Chrome, Edge, Firefox, or Safari.
+3. Adjust the wind-speed control and explore the available visualization toggles.
 
-Rather than relying solely on static diagrams, this project brings the physics to life through interactive 3D web technologies. The system emphasizes:
+The prototypes load Tailwind CSS and fonts from CDNs, so an internet connection may be needed for their complete visual styling. The core HTML files can still be opened directly from the filesystem.
 
-- Efficient rotor and blade aerodynamics.
-- Lightweight material considerations (Carbon Fiber vs. Plastic).
-- Real-time power generation telemetry.
-- Environmental impact visualization (seasons, weather, air density).
+## Prototype variants
 
----
+The filenames currently use the existing `Desgin` spelling:
 
-## ✨ Core Features
+| File                           | Focus                                                  |
+| ------------------------------ | ------------------------------------------------------ |
+| [`Desgin1.html`](Desgin1.html) | Futuristic dark-mode turbine simulator and designer.   |
+| [`Desgin2.html`](Desgin2.html) | AEROSIM 3D dashboard with a technical dark interface.  |
+| [`Desgin3.html`](Desgin3.html) | AEROSIM 3D environmental wind-physics simulator.       |
+| [`Desgin4.html`](Desgin4.html) | Additional AEROSIM 3D environmental simulator variant. |
 
-The interfaces include several design and analysis elements inspired by realistic turbine engineering workflows:
+## Simulation model
 
-- **Real-time 3D Visualization:** Dynamic rotation speed mapped directly to wind speed inputs.
-- **Environmental Ecosystem:** Scattered low-poly trees that physically sway based on wind velocity.
-- **Seasons & Weather System:** Toggle between Spring, Summer, Autumn, and Winter—changing sky lighting, ground colors, and introducing weather particles (falling leaves/snow).
-- **Aerodynamic Overlays:** Particle-based airflow streams that visualize wind hitting the rotor.
-- **Structural Stress Map:** Visual heatmap on the turbine hub that glows red when mechanical stress increases at high wind speeds.
-- **Live Telemetry Dashboard:** Real-time tracking of RPM, Power Output (Watts), and System Efficiency (%).
-- **Live Power Graph:** An oscilloscope-style chart showing power generation over time.
-- **Blueprint Mode:** Instantly toggle materials to wireframe to view the structural layout of the turbine.
-- **Cost Estimator:** A slide-out Bill of Materials (BOM) panel calculating rough prototype costs.
+The telemetry uses a simplified wind-power relationship:
 
----
-
-## 🎨 Design Variants
-
-This repository contains three HTML design variants demonstrating different visual directions for the same engineering concept:
-
-- `Design1.html` — **Futuristic Dark Mode:** A high-contrast, space-grade charcoal interface with glowing energy-green data readouts.
-- `Design2.html` — **Blueprint Dashboard:** An engineering-focused layout featuring heavy grid lines and technical schematic aesthetics.
-- `Design3.html` — **Modern Environmental Simulator:** A clean, light-mode, realistic CAD-style interface featuring dynamic seasons, weather, and environmental physics.
-
----
-
-## ⚙️ Physics & Simulation Logic
-
-While primarily a design study, the simulations are grounded in real wind energy physics principles. The live telemetry calculates power output using a simplified model of the wind power equation:
-
-`P = 0.5 * ρ * A * v³ * Cp`
+$$P = \frac{1}{2} \rho A v^3 C_p$$
 
 Where:
 
-- `ρ` (Air Density): Dynamically changes based on the selected season (e.g., Winter air is denser than Summer air, generating slightly more power at the same wind speed).
-- `v` (Wind Speed): Controlled by the user via the wind speed slider.
-- `Cp` (Power Coefficient): Modeled to peak at ~35% efficiency around 10 m/s, reflecting realistic small-scale turbine limits.
+- `P` is estimated power output in watts.
+- `rho` is air density in kilograms per cubic metre.
+- `A` is the rotor swept area in square metres.
+- `v` is wind speed in metres per second.
+- `Cp` is the power coefficient, representing the fraction of wind energy captured by the turbine.
 
----
+Because power scales with the cube of wind speed, small changes in wind speed can produce large changes in the estimated output. Environmental variants also use seasonal conditions to vary air density and the surrounding scene.
 
-## 🚀 How to Use
+These prototypes are educational visualizations rather than calibrated engineering or safety-analysis tools. Their results should not be used for construction, procurement, or performance certification.
 
-1. **Clone or Download** this repository to your local machine.
-2. Open any of the `.html` files (`Design1.html`, `Design2.html`, or `Design3.html`) directly in a modern web browser (Chrome, Firefox, Edge, Safari).
-3. Use the **Wind Speed Slider** to control the environment.
-4. Toggle **Seasons** (in Design 3) to see how air density and weather affect the simulation.
-5. Toggle **Airflow** and **Stress Map** to view aerodynamic and mechanical visualizations.
-6. Click **Blueprint Mode** to switch from a solid 3D view to a structural wireframe.
-7. Click **Export Sheet** to trigger a building-up PDF layout animation.
+## Learning goals
 
----
+This project is intended to help demonstrate:
 
-## 📁 Repository Structure
+- How wind speed and air density affect available energy.
+- Why turbine efficiency is limited by the power coefficient.
+- The relationship between rotor motion, telemetry, and environmental inputs.
+- Early-stage tradeoffs between materials, structure, cost, and presentation.
+
+## Repository structure
 
 ```text
 Wind-Turbine---Applied-Physics-Project/
-│
-├── Design1.html          # Futuristic dark mode simulator
-├── Design2.html          # Blueprint dashboard variant
-├── Design3.html           # Modern environmental simulator (seasons & weather)
-├── README.md             # Project documentation (this file)
-│
-└── docs/                 # Project documentation and design concepts
+├── Desgin1.html       # Futuristic turbine simulator
+├── Desgin2.html       # Technical AEROSIM dashboard
+├── Desgin3.html       # Environmental simulator
+├── Desgin4.html       # Additional environmental variant
+├── Presentation.pptx  # Project presentation
+├── Report.docx        # Project report
+└── README.md          # Project documentation
 ```
 
-```
-
----
-
-## 🎓 Educational Value
-
-This project is highly useful for:
-
-- **Renewable Energy Education:** Visualizing how wind speed translates to electrical power.
-- **Applied Physics Demonstrations:** Showing the relationship between air density, velocity, and kinetic energy harvesting.
-- **Engineering Design Discussions:** Comparing material choices (weight vs. durability) and structural stress factors.
-- **Early-Stage Concept Modeling:** Providing a polished, interactive mockup for class projects or investor pitches.
-
----
-
-## 📚 References
+## References
 
 1. Darwish, S. A. S. K., et al. "Review of Small Wind Turbine Designs and Applications." _Renewable and Sustainable Energy Reviews_, 2013.
 2. Elliott, J. B. _Wind Energy Explained: Theory, Design, and Application_. John Wiley & Sons, 2004.
 3. Khan, S. A. "Designing a Small Wind Turbine for Sustainable Energy Generation." _Journal of Renewable Energy_, 2020.
 
----
+```
 
-_Feel free to explore the individual HTML designs and adapt the project further for more advanced simulations or academic presentations._
 ```
