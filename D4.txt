@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AEROSIM 3D | Environmental Wind Physics Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-app: #f4f5f7;
+        --bg-panel: rgba(255, 255, 255, 0.85);
+        --bg-card: rgba(248, 250, 252, 0.9);
+        --border-light: rgba(15, 23, 42, 0.08);
+        --border-dark: rgba(15, 23, 42, 0.15);
+        --text-main: #0f172a;
+        --text-dim: #64748b;
+        --accent-green: #059669;
+        --accent-green-hover: #047857;
+        --accent-light: #d1fae5;
+        --shadow-soft: 0 10px 30px -10px rgba(15, 23, 42, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Space Grotesk", sans-serif;
+        background-color: var(--bg-app);
+        color: var(--text-main);
+        overflow: hidden;
+        margin: 0;
+        height: 100vh;
+      }
+
+      .grid-bg {
+        background-color: var(--bg-app);
+        background-image:
+          linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+          linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+        background-size:
+          20px 20px,
+          20px 20px,
+          100px 100px,
+          100px 100px;
+      }
+
+      .glass-panel {
+        background: var(--bg-panel);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-soft);
+      }
+
+      h1,
+      h2,
+      h3,
+      .heading {
+        font-family: "Space Grotesk", sans-serif;
+        letter-spacing: -0.02em;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .btn-action {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--border-dark);
+        background: #ffffff;
+        color: var(--text-main);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+      .btn-action:hover {
+        border-color: var(--accent-green);
+        color: var(--accent-green-hover);
+        background: var(--accent-light);
+      }
+      .btn-active {
+        border-color: var(--accent-green);
+        color: #ffffff;
+        background: var(--accent-green);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+      }
+
+      .slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        outline: none;
+        border-radius: 6px;
+      }
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: #ffffff;
+        cursor: pointer;
+        border-radius: 50%;
+        border: 2px solid var(--accent-green);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .panel-right {
+        transform: translateX(110%);
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .panel-right.open {
+        transform: translateX(0);
+      }
+
+      .pdf-overlay {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+      }
+      .pdf-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .draw-path {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: drawLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes drawLine {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .glow-text {
+        text-shadow: 0 0 12px rgba(5, 150, 105, 0.2);
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body class="grid-bg flex flex-col h-screen">
+    <!-- Top Navigation -->
+    <header
+      class="absolute top-0 left-0 right-0 z-30 glass-panel m-4 rounded-2xl p-4 flex justify-between items-center"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="w-10 h-10 rounded-xl bg-[var(--accent-green)] flex items-center justify-center shadow-lg shadow-emerald-500/30"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#ffffff"
+            stroke-width="2.5"
+          >
+            <path d="M12 2L12 22M2 12L22 12M5 5L19 19M19 5L5 19" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-wide text-[var(--text-main)]">
+            AERO<span class="text-[var(--accent-green)]">SIM</span> 3D
+          </h1>
+          <p
+            class="text-[10px] text-[var(--text-dim)] mono uppercase tracking-widest"
+          >
+            Environmental Physics Suite
+          </p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-center">
+        <button
+          id="viewToggle"
+          class="btn-action px-5 py-2.5 text-xs font-medium rounded-xl uppercase tracking-wider flex items-center gap-2"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          Blueprint Mode
+        </button>
+        <button
+          id="exportBtn"
+          class="btn-action px-5 py-2.5 text-xs font-medium rounded-xl uppercase tracking-wider flex items-center gap-2"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+            />
+          </svg>
+          Export Sheet
+        </button>
+      </div>
+    </header>
+
+    <!-- Left Floating Toolbar -->
+    <aside
+      class="absolute top-28 left-4 w-72 z-20 glass-panel rounded-2xl p-5 max-h-[calc(100vh-220px)] overflow-y-auto"
+    >
+      <div class="mb-6">
+        <h3
+          class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
+        >
+          Blade Material
+        </h3>
+        <div class="flex flex-col gap-2 text-xs">
+          <button
+            id="matPlastic"
+            class="btn-action px-3 py-2.5 rounded-xl text-left flex justify-between items-center"
+          >
+            <span>Lightweight Plastic</span
+            ><span class="mono text-[10px] text-[var(--text-dim)]">2.5kg</span>
+          </button>
+          <button
+            id="matCarbon"
+            class="btn-action btn-active px-3 py-2.5 rounded-xl text-left flex justify-between items-center text-white"
+          >
+            <span>Carbon Fiber</span
+            ><span class="mono text-[10px] opacity-80">1.2kg</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h3
+          class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
+        >
+          Season & Environment
+        </h3>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button
+            data-season="spring"
+            class="btn-action season-btn px-3 py-2.5 rounded-xl text-left"
+          >
+            Spring
+          </button>
+          <button
+            data-season="summer"
+            class="btn-action season-btn btn-active px-3 py-2.5 rounded-xl text-left text-white"
+          >
+            Summer
+          </button>
+          <button
+            data-season="autumn"
+            class="btn-action season-btn px-3 py-2.5 rounded-xl text-left"
+          >
+            Autumn
+          </button>
+          <button
+            data-season="winter"
+            class="btn-action season-btn px-3 py-2.5 rounded-xl text-left"
+          >
+            Winter
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h3
+          class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
+        >
+          Simulation Toggles
+        </h3>
+        <div class="flex flex-col gap-2 text-xs">
+          <button
+            id="airflowToggle"
+            class="btn-action px-3 py-2.5 rounded-xl text-left flex items-center gap-2"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 12h4l3 9 4-18 3 9h4" />
+            </svg>
+            Show Airflow
+          </button>
+          <button
+            id="stressToggle"
+            class="btn-action px-3 py-2.5 rounded-xl text-left flex items-center gap-2"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Show Stress Map
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Floating Cost Panel -->
+    <aside
+      id="costPanel"
+      class="panel-right absolute top-28 right-4 bottom-40 w-80 z-20 glass-panel rounded-2xl p-6 overflow-y-auto"
+    >
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h2 class="text-lg font-bold text-[var(--text-main)]">
+            Cost Estimator
+          </h2>
+          <p
+            class="text-[10px] text-[var(--text-dim)] mono uppercase tracking-widest"
+          >
+            Bill of Materials
+          </p>
+        </div>
+        <button
+          id="closeCost"
+          class="text-[var(--text-dim)] hover:text-[var(--text-main)] text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100"
+        >
+          ×
+        </button>
+      </div>
+      <div class="space-y-3 text-sm mb-8">
+        <div class="flex justify-between border-b border-slate-200 pb-3">
+          <div>
+            <div class="font-medium">Carbon Fiber Blades (x3)</div>
+            <div class="text-[10px] text-[var(--text-dim)] mono">
+              AERO-CF-3000
+            </div>
+          </div>
+          <span class="mono text-[var(--accent-green)] font-bold">$45.00</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-3">
+          <div>
+            <div class="font-medium">12V DC Generator</div>
+            <div class="text-[10px] text-[var(--text-dim)] mono">
+              PWR-GEN-12V
+            </div>
+          </div>
+          <span class="mono text-[var(--accent-green)] font-bold">$25.00</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-3">
+          <div>
+            <div class="font-medium">Tubular Steel Tower (3m)</div>
+            <div class="text-[10px] text-[var(--text-dim)] mono">
+              STR-TWR-3M
+            </div>
+          </div>
+          <span class="mono text-[var(--accent-green)] font-bold">$30.00</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-3">
+          <div>
+            <div class="font-medium">Voltage Regulator</div>
+            <div class="text-[10px] text-[var(--text-dim)] mono">
+              CTRL-REG-01
+            </div>
+          </div>
+          <span class="mono text-[var(--accent-green)] font-bold">$15.00</span>
+        </div>
+      </div>
+      <div class="border-t border-slate-300 pt-4">
+        <div class="flex justify-between text-sm text-[var(--text-dim)] mb-1">
+          <span>Subtotal</span><span class="mono">$115.00</span>
+        </div>
+        <div class="flex justify-between text-sm text-[var(--text-dim)] mb-4">
+          <span>Shipping & Tax</span><span class="mono">$18.50</span>
+        </div>
+        <div class="flex justify-between items-end">
+          <span class="heading text-lg text-[var(--text-main)]">Total</span
+          ><span class="mono text-2xl text-[var(--accent-green)] glow-text"
+            >$133.50</span
+          >
+        </div>
+      </div>
+      <button
+        class="btn-action btn-active w-full mt-8 py-3 rounded-xl uppercase tracking-wider text-xs font-bold"
+      >
+        Export BOM PDF
+      </button>
+    </aside>
+
+    <!-- Bottom Telemetry HUD -->
+    <footer class="absolute bottom-0 left-0 right-0 z-20 p-4">
+      <div class="glass-panel rounded-2xl p-5 max-w-6xl mx-auto">
+        <div class="grid grid-cols-5 gap-8 items-center">
+          <!-- Wind Speed -->
+          <div>
+            <div
+              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
+            >
+              Wind Speed Control
+            </div>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span
+                id="windDisplay"
+                class="text-3xl mono font-bold text-[var(--text-main)]"
+                >5.0</span
+              >
+              <span class="text-xs text-[var(--text-dim)] mono">m/s</span>
+            </div>
+            <input
+              id="windSlider"
+              type="range"
+              min="2"
+              max="12"
+              step="0.1"
+              value="5"
+              class="slider"
+            />
+          </div>
+
+          <!-- Power Output -->
+          <div class="border-l border-slate-200 pl-8">
+            <div
+              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
+            >
+              Power Output
+            </div>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span
+                id="powerDisplay"
+                class="text-3xl mono font-bold text-[var(--accent-green)] glow-text"
+                >0.0</span
+              >
+              <span class="text-xs text-[var(--text-dim)] mono">Watts</span>
+            </div>
+            <div class="text-[10px] text-[var(--text-dim)] mono">
+              AIR DENSITY: <span id="densityDisplay">1.225</span> kg/m³
+            </div>
+          </div>
+
+          <!-- Live Graph -->
+          <div class="border-l border-slate-200 pl-8 col-span-2">
+            <div
+              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
+            >
+              Power Generation (Last 30s)
+            </div>
+            <canvas
+              id="graphCanvas"
+              width="400"
+              height="60"
+              class="w-full h-16"
+            ></canvas>
+          </div>
+
+          <!-- Efficiency -->
+          <div class="border-l border-slate-200 pl-8">
+            <div
+              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
+            >
+              System Efficiency
+            </div>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span
+                id="effDisplay"
+                class="text-3xl mono font-bold text-[var(--text-main)]"
+                >0</span
+              >
+              <span class="text-xs text-[var(--text-dim)] mono">%</span>
+            </div>
+            <div class="w-full bg-slate-200 h-1.5 rounded mt-3 overflow-hidden">
+              <div
+                id="effBar"
+                class="bg-[var(--text-main)] h-full rounded transition-all duration-200"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- PDF Export Animation Overlay -->
+    <div
+      id="pdfOverlay"
+      class="pdf-overlay absolute inset-0 z-50 flex items-center justify-center"
+    >
+      <svg width="600" height="400" viewBox="0 0 600 400">
+        <rect
+          x="20"
+          y="20"
+          width="560"
+          height="360"
+          fill="none"
+          stroke="#0f172a"
+          stroke-width="1"
+          class="draw-path"
+          opacity="0.6"
+        />
+        <line
+          x1="20"
+          y1="60"
+          x2="580"
+          y2="60"
+          stroke="#0f172a"
+          stroke-width="1"
+          class="draw-path"
+          opacity="0.6"
+        />
+        <line
+          x1="300"
+          y1="60"
+          x2="300"
+          y2="380"
+          stroke="#cbd5e1"
+          stroke-width="1"
+          class="draw-path"
+          opacity="0.6"
+        />
+        <path
+          d="M 150 320 L 150 120 L 170 100 L 170 90 L 210 90 L 210 100 L 230 120 L 230 320 Z"
+          fill="none"
+          stroke="#0f172a"
+          stroke-width="1.5"
+          class="draw-path"
+        />
+        <path
+          d="M 190 90 L 150 20 M 190 90 L 250 30 M 190 90 L 130 30"
+          fill="none"
+          stroke="#0f172a"
+          stroke-width="1.5"
+          class="draw-path"
+        />
+        <circle cx="190" cy="90" r="5" fill="#059669" class="draw-path" />
+        <text
+          x="320"
+          y="90"
+          fill="#0f172a"
+          font-family="Space Grotesk"
+          font-size="16"
+          font-weight="bold"
+          class="draw-path"
+        >
+          LAYOUT SHEET
+        </text>
+        <text
+          x="320"
+          y="130"
+          fill="#64748b"
+          font-family="JetBrains Mono"
+          font-size="12"
+          class="draw-path"
+        >
+          PROJECT: AEROSIM 3D
+        </text>
+        <text
+          x="320"
+          y="170"
+          fill="#64748b"
+          font-family="JetBrains Mono"
+          font-size="12"
+          class="draw-path"
+        >
+          MATERIAL: CARBON FIBER
+        </text>
+        <text
+          x="320"
+          y="210"
+          fill="#059669"
+          font-family="JetBrains Mono"
+          font-size="12"
+          class="draw-path"
+        >
+          PEAK POWER: 50W
+        </text>
+      </svg>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      // Scene Setup
+      const canvas = document.getElementById("threeCanvas");
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x87ceeb); // Sky blue default
+      scene.fog = new THREE.Fog(0x87ceeb, 30, 80);
+
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        canvas.clientWidth / canvas.clientHeight,
+        0.1,
+        1000,
+      );
+      const cam3DPos = new THREE.Vector3(12, 8, 14);
+      const cam2DPos = new THREE.Vector3(0, 25, 0.01);
+      camera.position.copy(cam3DPos);
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.target.set(0, 4, 0);
+      controls.maxPolarAngle = Math.PI / 2 - 0.05;
+      controls.minDistance = 8;
+      controls.maxDistance = 40;
+
+      // Lighting Setup
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 0.8);
+      scene.add(hemiLight);
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+      keyLight.position.set(10, 20, 15);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.width = 2048;
+      keyLight.shadow.mapSize.height = 2048;
+      keyLight.shadow.camera.near = 0.5;
+      keyLight.shadow.camera.far = 60;
+      keyLight.shadow.camera.left = -25;
+      keyLight.shadow.camera.right = 25;
+      keyLight.shadow.camera.top = 25;
+      keyLight.shadow.camera.bottom = -25;
+      keyLight.shadow.bias = -0.0001;
+      scene.add(keyLight);
+
+      // Ground Mesh
+      const groundGeo = new THREE.PlaneGeometry(100, 100);
+      const groundMat = new THREE.MeshStandardMaterial({
+        color: 0x4caf50,
+        roughness: 0.9,
+        metalness: 0.0,
+      }); // Summer grass
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Turbine Construction
+      const turbineGroup = new THREE.Group();
+      scene.add(turbineGroup);
+
+      const towerGeo = new THREE.CylinderGeometry(0.18, 0.35, 8, 32);
+      const towerMat = new THREE.MeshStandardMaterial({
+        color: 0xe2e8f0,
+        metalness: 0.1,
+        roughness: 0.7,
+      });
+      const tower = new THREE.Mesh(towerGeo, towerMat);
+      tower.position.y = 4;
+      tower.castShadow = true;
+      turbineGroup.add(tower);
+
+      const nacelleGeo = new THREE.BoxGeometry(0.7, 0.5, 1.5);
+      const nacelleMat = new THREE.MeshStandardMaterial({
+        color: 0xf8fafc,
+        metalness: 0.5,
+        roughness: 0.3,
+      });
+      const nacelle = new THREE.Mesh(nacelleGeo, nacelleMat);
+      nacelle.position.set(0, 8.1, 0.3);
+      nacelle.castShadow = true;
+      turbineGroup.add(nacelle);
+
+      const hubGeo = new THREE.SphereGeometry(0.3, 32, 32);
+      const hubMat = new THREE.MeshStandardMaterial({
+        color: 0x059669,
+        metalness: 0.6,
+        roughness: 0.2,
+      });
+      const hub = new THREE.Mesh(hubGeo, hubMat);
+      hub.position.set(0, 8.1, 1.05);
+      hub.castShadow = true;
+      turbineGroup.add(hub);
+
+      const bladeGroup = new THREE.Group();
+      bladeGroup.position.set(0, 8.1, 1.05);
+      turbineGroup.add(bladeGroup);
+
+      const bladeShape = new THREE.Shape();
+      bladeShape.moveTo(0, 0);
+      bladeShape.bezierCurveTo(0.5, 1, 0.6, 3, 0.15, 4.8);
+      bladeShape.bezierCurveTo(0, 5.1, -0.2, 5.1, -0.25, 4.8);
+      bladeShape.bezierCurveTo(0.1, 3, -0.1, 1, 0, 0);
+      const bladeGeo = new THREE.ExtrudeGeometry(bladeShape, {
+        depth: 0.12,
+        bevelEnabled: true,
+        bevelThickness: 0.06,
+        bevelSize: 0.06,
+        bevelSegments: 4,
+      });
+      bladeGeo.translate(-0.1, 0, -0.06);
+      bladeGeo.rotateZ(-0.3);
+
+      const bladeMatCarbon = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 0.4,
+        roughness: 0.3,
+      });
+      const bladeMatPlastic = new THREE.MeshStandardMaterial({
+        color: 0xe2e8f0,
+        metalness: 0.1,
+        roughness: 0.6,
+      });
+      let currentBladeMat = bladeMatCarbon;
+
+      for (let i = 0; i < 3; i++) {
+        const blade = new THREE.Mesh(bladeGeo, currentBladeMat);
+        blade.rotation.z = (i * 2 * Math.PI) / 3;
+        blade.castShadow = true;
+        bladeGroup.add(blade);
+      }
+
+      // --- ENVIRONMENT: TREES ---
+      const trees = [];
+      function createTree(x, z) {
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.2, 0.3, 2, 8),
+          new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 }),
+        );
+        trunk.position.y = 1;
+        trunk.castShadow = true;
+        tree.add(trunk);
+
+        const foliageMat = new THREE.MeshStandardMaterial({
+          color: 0x2e8b57,
+          roughness: 0.7,
+        });
+        const foliage = new THREE.Mesh(
+          new THREE.SphereGeometry(1.5, 12, 12),
+          foliageMat,
+        );
+        foliage.position.y = 3;
+        foliage.scale.set(1, 1.2, 1);
+        foliage.castShadow = true;
+        tree.add(foliage);
+
+        tree.position.set(x, 0, z);
+        tree.userData.foliage = foliage;
+        tree.userData.basePos = tree.position.clone();
+        scene.add(tree);
+        trees.push(tree);
+      }
+
+      // Scatter trees avoiding the center (turbine area)
+      for (let i = 0; i < 25; i++) {
+        let x = (Math.random() - 0.5) * 80;
+        let z = (Math.random() - 0.5) * 80;
+        if (Math.sqrt(x * x + z * z) < 6) continue; // Keep center clear
+        createTree(x, z);
+      }
+
+      // --- AIRFLOW PARTICLES ---
+      const airflowGroup = new THREE.Group();
+      scene.add(airflowGroup);
+      const windParticles = [];
+      const particleGeo = new THREE.SphereGeometry(0.08, 8, 8);
+
+      for (let i = 0; i < 60; i++) {
+        const particleMat = new THREE.MeshBasicMaterial({
+          color: 0x10b981,
+          transparent: true,
+          opacity: 0.7,
+        });
+        const particle = new THREE.Mesh(particleGeo, particleMat);
+        particle.position.set(
+          -10 - Math.random() * 15,
+          2 + Math.random() * 7,
+          (Math.random() - 0.5) * 5,
+        );
+        particle.userData.speed = 1 + Math.random() * 0.5;
+        airflowGroup.add(particle);
+        windParticles.push(particle);
+      }
+      airflowGroup.visible = false;
+
+      // --- WEATHER PARTICLES (Leaves/Snow) ---
+      const weatherGroup = new THREE.Group();
+      scene.add(weatherGroup);
+      const weatherParticles = [];
+      const weatherGeo = new THREE.PlaneGeometry(0.2, 0.2);
+
+      for (let i = 0; i < 150; i++) {
+        const particleMat = new THREE.MeshBasicMaterial({
+          color: 0xffa500,
+          transparent: true,
+          opacity: 0.8,
+          side: THREE.DoubleSide,
+        });
+        const particle = new THREE.Mesh(weatherGeo, particleMat);
+        particle.position.set(
+          (Math.random() - 0.5) * 60,
+          Math.random() * 20,
+          (Math.random() - 0.5) * 60,
+        );
+        particle.userData.speed = 1 + Math.random();
+        particle.userData.rotSpeed = (Math.random() - 0.5) * 0.1;
+        weatherGroup.add(particle);
+        weatherParticles.push(particle);
+      }
+
+      // --- SIMULATION STATE ---
+      let windSpeed = 5.0;
+      let rotationSpeed = 0;
+      let is3DView = true;
+      let isStressVisible = false;
+      let isCameraAnimating = false;
+      let airDensity = 1.225; // Summer default
+      let currentSeason = "summer";
+      let powerHistory = new Array(60).fill(0);
+
+      // --- UI ELEMENTS ---
+      const windSlider = document.getElementById("windSlider");
+      const windDisplay = document.getElementById("windDisplay");
+      const powerDisplay = document.getElementById("powerDisplay");
+      const effDisplay = document.getElementById("effDisplay");
+      const effBar = document.getElementById("effBar");
+      const densityDisplay = document.getElementById("densityDisplay");
+      const graphCanvas = document.getElementById("graphCanvas");
+      const graphCtx = graphCanvas.getContext("2d");
+
+      windSlider.addEventListener("input", (e) => {
+        windSpeed = parseFloat(e.target.value);
+        windDisplay.textContent = windSpeed.toFixed(1);
+      });
+
+      document.getElementById("viewToggle").addEventListener("click", (e) => {
+        is3DView = !is3DView;
+        e.currentTarget.innerHTML = is3DView
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Blueprint Mode'
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 3D Simulation';
+        isCameraAnimating = true;
+        towerMat.wireframe = !is3DView;
+        nacelleMat.wireframe = !is3DView;
+        hubMat.wireframe = !is3DView;
+        currentBladeMat.wireframe = !is3DView;
+      });
+
+      document.getElementById("matPlastic").addEventListener("click", () => {
+        swapBladeMaterial(bladeMatPlastic);
+        document.getElementById("matPlastic").classList.add("btn-active");
+        document.getElementById("matCarbon").classList.remove("btn-active");
+      });
+
+      document.getElementById("matCarbon").addEventListener("click", () => {
+        swapBladeMaterial(bladeMatCarbon);
+        document.getElementById("matCarbon").classList.add("btn-active");
+        document.getElementById("matPlastic").classList.remove("btn-active");
+      });
+
+      function swapBladeMaterial(newMat) {
+        bladeGroup.children.forEach((blade) => {
+          blade.material = newMat;
+          blade.material.wireframe = !is3DView;
+        });
+        currentBladeMat = newMat;
+      }
+
+      document
+        .getElementById("airflowToggle")
+        .addEventListener("click", (e) => {
+          airflowGroup.visible = !airflowGroup.visible;
+          e.currentTarget.classList.toggle("btn-active");
+        });
+
+      document.getElementById("stressToggle").addEventListener("click", (e) => {
+        isStressVisible = !isStressVisible;
+        e.currentTarget.classList.toggle("btn-active");
+      });
+
+      // --- SEASON LOGIC ---
+      const seasonConfigs = {
+        spring: {
+          sky: 0xb3e5fc,
+          ground: 0x81c784,
+          leaf: 0x66bb6a,
+          density: 1.225,
+          weatherColor: 0xff69b4,
+        },
+        summer: {
+          sky: 0x87ceeb,
+          ground: 0x4caf50,
+          leaf: 0x2e8b57,
+          density: 1.184,
+          weatherColor: 0xffa500,
+        },
+        autumn: {
+          sky: 0xffcc80,
+          ground: 0xa1887f,
+          leaf: 0xe65100,
+          density: 1.225,
+          weatherColor: 0xbf360c,
+        },
+        winter: {
+          sky: 0xeceff1,
+          ground: 0xf5f5f5,
+          leaf: 0x9e9e9e,
+          density: 1.392,
+          weatherColor: 0xffffff,
+        },
+      };
+
+      document.querySelectorAll(".season-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          document
+            .querySelectorAll(".season-btn")
+            .forEach((b) => b.classList.remove("btn-active"));
+          e.currentTarget.classList.add("btn-active");
+          setSeason(e.currentTarget.dataset.season);
+        });
+      });
+
+      function setSeason(season) {
+        currentSeason = season;
+        const config = seasonConfigs[season];
+
+        scene.background.setHex(config.sky);
+        scene.fog.color.setHex(config.sky);
+        groundMat.color.setHex(config.ground);
+        airDensity = config.density;
+        densityDisplay.textContent = airDensity.toFixed(3);
+
+        trees.forEach((tree) => {
+          tree.userData.foliage.material.color.setHex(config.leaf);
+        });
+
+        weatherParticles.forEach((p) => {
+          p.material.color.setHex(config.weatherColor);
+          if (season === "summer") p.visible = false;
+          else p.visible = true;
+        });
+      }
+      setSeason("summer"); // Init
+
+      // Cost Panel Logic
+      const costPanel = document.getElementById("costPanel");
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        costPanel.classList.add("open");
+        const overlay = document.getElementById("pdfOverlay");
+        overlay.classList.add("active");
+        const svg = overlay.querySelector("svg");
+        svg.innerHTML = svg.innerHTML;
+        setTimeout(() => overlay.classList.remove("active"), 2500);
+      });
+      document
+        .getElementById("closeCost")
+        .addEventListener("click", () => costPanel.classList.remove("open"));
+
+      // --- ANIMATION LOOP ---
+      let lastTime = 0;
+      let lerpFactor = 0;
+      let timeAccumulator = 0;
+
+      function animate(time) {
+        const delta = Math.min((time - lastTime) / 1000, 0.1);
+        lastTime = time;
+
+        // Camera Transition
+        if (isCameraAnimating) {
+          lerpFactor += delta * 2;
+          if (lerpFactor > 1) lerpFactor = 1;
+          const targetPos = is3DView ? cam3DPos : cam2DPos;
+          camera.position.lerp(targetPos, 0.05);
+          if (lerpFactor >= 0.95) {
+            camera.position.copy(targetPos);
+            isCameraAnimating = false;
+            lerpFactor = 0;
+          }
+        }
+
+        // Physics & Telemetry
+        // P = 0.5 * rho * A * v^3 * Cp
+        const basePower = Math.pow((windSpeed - 2.5) / 7.5, 2.5) * 50;
+        const power = Math.max(
+          0,
+          basePower * (airDensity / 1.225) * (windSpeed > 2.5 ? 1 : 0),
+        );
+
+        const targetRPM = windSpeed < 3 ? 0 : (windSpeed - 2) * 12;
+        rotationSpeed += (targetRPM - rotationSpeed) * 0.05;
+        bladeGroup.rotation.z += (rotationSpeed / 60) * Math.PI * 2 * delta;
+
+        let efficiency =
+          windSpeed > 2.5 ? 35 * Math.exp(-Math.pow(windSpeed - 10, 2) / 8) : 0;
+
+        // Update Telemetry UI
+        powerDisplay.textContent = power.toFixed(1);
+        effDisplay.textContent = efficiency.toFixed(0);
+        effBar.style.width = (efficiency / 35) * 100 + "%";
+
+        // Tree Sway based on wind
+        trees.forEach((tree, index) => {
+          const sway =
+            Math.sin(time * 0.001 * (windSpeed / 2) + index) *
+            (windSpeed * 0.015);
+          tree.userData.foliage.rotation.z = sway;
+          tree.userData.foliage.position.x = sway * 0.5;
+        });
+
+        // Airflow Animation
+        if (airflowGroup.visible) {
+          windParticles.forEach((p) => {
+            p.position.x += delta * windSpeed * p.userData.speed * 1.5;
+            p.position.y += Math.sin(time * 0.005 + p.position.x) * 0.005;
+
+            if (p.position.x > 6) {
+              p.position.x = -15 - Math.random() * 5;
+              p.position.y = 2 + Math.random() * 7;
+              p.position.z = (Math.random() - 0.5) * 5;
+            }
+          });
+        }
+
+        // Weather Animation (Leaves/Snow falling)
+        if (currentSeason !== "summer") {
+          weatherParticles.forEach((p) => {
+            p.position.y -= delta * p.userData.speed * 2; // Falling speed
+            p.position.x += delta * windSpeed * 0.5; // Blown by wind
+            p.rotation.z += p.userData.rotSpeed;
+            p.rotation.x += p.userData.rotSpeed;
+
+            if (p.position.y < 0) {
+              p.position.y = 15 + Math.random() * 5;
+              p.position.x = (Math.random() - 0.5) * 60 + windSpeed * 2;
+              p.position.z = (Math.random() - 0.5) * 60;
+            }
+          });
+        }
+
+        // Stress Visualization
+        if (isStressVisible) {
+          const stressLevel = Math.max(0, (windSpeed - 8) / 4);
+          hubMat.color.setRGB(stressLevel, 1 - stressLevel, 0);
+          hubMat.emissive.setRGB(stressLevel, 1 - stressLevel, 0);
+          hubMat.emissiveIntensity = 0.3 + stressLevel * 0.5;
+        } else {
+          hubMat.color.setHex(0x059669);
+          hubMat.emissive.setRGB(0, 0, 0);
+        }
+
+        // Update Graph every ~0.5s
+        timeAccumulator += delta;
+        if (timeAccumulator > 0.5) {
+          timeAccumulator = 0;
+          powerHistory.shift();
+          powerHistory.push(power);
+          drawGraph();
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      function drawGraph() {
+        const w = graphCanvas.width;
+        const h = graphCanvas.height;
+        graphCtx.clearRect(0, 0, w, h);
+
+        // Background grid
+        graphCtx.strokeStyle = "#e2e8f0";
+        graphCtx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+          graphCtx.beginPath();
+          graphCtx.moveTo(0, (h / 4) * i);
+          graphCtx.lineTo(w, (h / 4) * i);
+          graphCtx.stroke();
+        }
+
+        // Line
+        graphCtx.strokeStyle = "#059669";
+        graphCtx.lineWidth = 2;
+        graphCtx.beginPath();
+
+        powerHistory.forEach((p, i) => {
+          const x = (i / (powerHistory.length - 1)) * w;
+          const y = h - (p / 60) * h; // 60W max scale
+          if (i === 0) graphCtx.moveTo(x, y);
+          else graphCtx.lineTo(x, y);
+        });
+        graphCtx.stroke();
+
+        // Fill Area
+        graphCtx.lineTo(w, h);
+        graphCtx.lineTo(0, h);
+        graphCtx.closePath();
+        graphCtx.fillStyle = "rgba(5, 150, 105, 0.1)";
+        graphCtx.fill();
+      }
+
+      window.addEventListener("resize", () => {
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      });
+
+      animate(0);
+    </script>
+  </body>
+</html>
