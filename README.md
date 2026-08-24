@@ -1,8 +1,3 @@
-Here is a polished, professional, and visually structured `README.md` tailored for your repository. It incorporates your original text, corrects the minor typos (like "Desgin"), and elevates the language to highlight the advanced features we added (like the environmental physics, live telemetry, and interactive 3D elements).
-
----
-
-````markdown
 # 🌪️ Wind Turbine Applied Physics Project
 
 > **Interactive 3D Engineering Simulators for Small-Scale Renewable Energy Prototyping.**
@@ -105,6 +100,7 @@ Wind-Turbine---Applied-Physics-Project/
 │
 └── docs/                 # Project documentation and design concepts
 ```
+
 ````
 
 ---
@@ -133,3 +129,4 @@ _Feel free to explore the individual HTML designs and adapt the project further 
 ```
 
 ```
+````
