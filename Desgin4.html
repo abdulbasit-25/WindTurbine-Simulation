@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -15,7 +15,6 @@
       :root {
         --bg-app: #f4f5f7;
         --bg-panel: rgba(255, 255, 255, 0.85);
-        --bg-card: rgba(248, 250, 252, 0.9);
         --border-light: rgba(15, 23, 42, 0.08);
         --border-dark: rgba(15, 23, 42, 0.15);
         --text-main: #0f172a;
@@ -25,11 +24,9 @@
         --accent-light: #d1fae5;
         --shadow-soft: 0 10px 30px -10px rgba(15, 23, 42, 0.1);
       }
-
       * {
         box-sizing: border-box;
       }
-
       body {
         font-family: "Space Grotesk", sans-serif;
         background-color: var(--bg-app);
@@ -38,9 +35,7 @@
         margin: 0;
         height: 100vh;
       }
-
       .grid-bg {
-        background-color: var(--bg-app);
         background-image:
           linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
           linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
@@ -52,7 +47,6 @@
           100px 100px,
           100px 100px;
       }
-
       .glass-panel {
         background: var(--bg-panel);
         backdrop-filter: blur(20px);
@@ -60,7 +54,6 @@
         border: 1px solid var(--border-light);
         box-shadow: var(--shadow-soft);
       }
-
       h1,
       h2,
       h3,
@@ -71,7 +64,6 @@
       .mono {
         font-family: "JetBrains Mono", monospace;
       }
-
       .btn-action {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid var(--border-dark);
@@ -90,7 +82,6 @@
         background: var(--accent-green);
         box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
       }
-
       .slider {
         -webkit-appearance: none;
         appearance: none;
@@ -111,7 +102,6 @@
         border: 2px solid var(--accent-green);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
-
       .panel-right {
         transform: translateX(110%);
         transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -119,7 +109,6 @@
       .panel-right.open {
         transform: translateX(0);
       }
-
       .pdf-overlay {
         opacity: 0;
         pointer-events: none;
@@ -144,7 +133,6 @@
       .glow-text {
         text-shadow: 0 0 12px rgba(5, 150, 105, 0.2);
       }
-
       ::-webkit-scrollbar {
         width: 6px;
       }
@@ -227,6 +215,11 @@
       </div>
     </header>
 
+    <!-- 3D Viewport (FIXED: Missing Canvas Added Here) -->
+    <main class="absolute inset-0 z-0">
+      <canvas id="threeCanvas"></canvas>
+    </main>
+
     <!-- Left Floating Toolbar -->
     <aside
       class="absolute top-28 left-4 w-72 z-20 glass-panel rounded-2xl p-5 max-h-[calc(100vh-220px)] overflow-y-auto"
@@ -254,7 +247,6 @@
           </button>
         </div>
       </div>
-
       <div class="mb-6">
         <h3
           class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
@@ -288,7 +280,6 @@
           </button>
         </div>
       </div>
-
       <div>
         <h3
           class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
@@ -422,7 +413,6 @@
     <footer class="absolute bottom-0 left-0 right-0 z-20 p-4">
       <div class="glass-panel rounded-2xl p-5 max-w-6xl mx-auto">
         <div class="grid grid-cols-5 gap-8 items-center">
-          <!-- Wind Speed -->
           <div>
             <div
               class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
@@ -434,8 +424,7 @@
                 id="windDisplay"
                 class="text-3xl mono font-bold text-[var(--text-main)]"
                 >5.0</span
-              >
-              <span class="text-xs text-[var(--text-dim)] mono">m/s</span>
+              ><span class="text-xs text-[var(--text-dim)] mono">m/s</span>
             </div>
             <input
               id="windSlider"
@@ -447,8 +436,6 @@
               class="slider"
             />
           </div>
-
-          <!-- Power Output -->
           <div class="border-l border-slate-200 pl-8">
             <div
               class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
@@ -460,30 +447,20 @@
                 id="powerDisplay"
                 class="text-3xl mono font-bold text-[var(--accent-green)] glow-text"
                 >0.0</span
-              >
-              <span class="text-xs text-[var(--text-dim)] mono">Watts</span>
+              ><span class="text-xs text-[var(--text-dim)] mono">Watts</span>
             </div>
             <div class="text-[10px] text-[var(--text-dim)] mono">
               AIR DENSITY: <span id="densityDisplay">1.225</span> kg/m³
             </div>
           </div>
-
-          <!-- Live Graph -->
           <div class="border-l border-slate-200 pl-8 col-span-2">
             <div
               class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
             >
               Power Generation (Last 30s)
             </div>
-            <canvas
-              id="graphCanvas"
-              width="400"
-              height="60"
-              class="w-full h-16"
-            ></canvas>
+            <canvas id="graphCanvas" class="w-full h-16 block"></canvas>
           </div>
-
-          <!-- Efficiency -->
           <div class="border-l border-slate-200 pl-8">
             <div
               class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
@@ -495,8 +472,7 @@
                 id="effDisplay"
                 class="text-3xl mono font-bold text-[var(--text-main)]"
                 >0</span
-              >
-              <span class="text-xs text-[var(--text-dim)] mono">%</span>
+              ><span class="text-xs text-[var(--text-dim)] mono">%</span>
             </div>
             <div class="w-full bg-slate-200 h-1.5 rounded mt-3 overflow-hidden">
               <div
@@ -621,12 +597,12 @@
       // Scene Setup
       const canvas = document.getElementById("threeCanvas");
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x87ceeb); // Sky blue default
+      scene.background = new THREE.Color(0x87ceeb);
       scene.fog = new THREE.Fog(0x87ceeb, 30, 80);
 
       const camera = new THREE.PerspectiveCamera(
         45,
-        canvas.clientWidth / canvas.clientHeight,
+        window.innerWidth / window.innerHeight,
         0.1,
         1000,
       );
@@ -639,7 +615,7 @@
         antialias: true,
         alpha: true,
       });
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -678,7 +654,7 @@
         color: 0x4caf50,
         roughness: 0.9,
         metalness: 0.0,
-      }); // Summer grass
+      });
       const ground = new THREE.Mesh(groundGeo, groundMat);
       ground.rotation.x = -Math.PI / 2;
       ground.receiveShadow = true;
@@ -786,16 +762,14 @@
 
         tree.position.set(x, 0, z);
         tree.userData.foliage = foliage;
-        tree.userData.basePos = tree.position.clone();
         scene.add(tree);
         trees.push(tree);
       }
 
-      // Scatter trees avoiding the center (turbine area)
       for (let i = 0; i < 25; i++) {
         let x = (Math.random() - 0.5) * 80;
         let z = (Math.random() - 0.5) * 80;
-        if (Math.sqrt(x * x + z * z) < 6) continue; // Keep center clear
+        if (Math.sqrt(x * x + z * z) < 6) continue;
         createTree(x, z);
       }
 
@@ -827,14 +801,15 @@
       const weatherGroup = new THREE.Group();
       scene.add(weatherGroup);
       const weatherParticles = [];
-      const weatherGeo = new THREE.PlaneGeometry(0.2, 0.2);
+      const weatherGeo = new THREE.SphereGeometry(0.12, 6, 6); // Improved geometry
 
       for (let i = 0; i < 150; i++) {
-        const particleMat = new THREE.MeshBasicMaterial({
-          color: 0xffa500,
+        const particleMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
           transparent: true,
-          opacity: 0.8,
-          side: THREE.DoubleSide,
+          opacity: 0.9,
+          emissive: 0xffffff,
+          emissiveIntensity: 0.4,
         });
         const particle = new THREE.Mesh(weatherGeo, particleMat);
         particle.position.set(
@@ -854,7 +829,7 @@
       let is3DView = true;
       let isStressVisible = false;
       let isCameraAnimating = false;
-      let airDensity = 1.225; // Summer default
+      let airDensity = 1.225;
       let currentSeason = "summer";
       let powerHistory = new Array(60).fill(0);
 
@@ -876,8 +851,8 @@
       document.getElementById("viewToggle").addEventListener("click", (e) => {
         is3DView = !is3DView;
         e.currentTarget.innerHTML = is3DView
-          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Blueprint Mode'
-          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 3D Simulation';
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg> Blueprint Mode'
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg> 3D Simulation';
         isCameraAnimating = true;
         towerMat.wireframe = !is3DView;
         nacelleMat.wireframe = !is3DView;
@@ -975,13 +950,12 @@
 
         weatherParticles.forEach((p) => {
           p.material.color.setHex(config.weatherColor);
-          if (season === "summer") p.visible = false;
-          else p.visible = true;
+          p.material.emissive.setHex(config.weatherColor);
+          p.visible = season !== "summer";
         });
       }
-      setSeason("summer"); // Init
+      setSeason("summer");
 
-      // Cost Panel Logic
       const costPanel = document.getElementById("costPanel");
       document.getElementById("exportBtn").addEventListener("click", () => {
         costPanel.classList.add("open");
@@ -1004,7 +978,6 @@
         const delta = Math.min((time - lastTime) / 1000, 0.1);
         lastTime = time;
 
-        // Camera Transition
         if (isCameraAnimating) {
           lerpFactor += delta * 2;
           if (lerpFactor > 1) lerpFactor = 1;
@@ -1017,8 +990,6 @@
           }
         }
 
-        // Physics & Telemetry
-        // P = 0.5 * rho * A * v^3 * Cp
         const basePower = Math.pow((windSpeed - 2.5) / 7.5, 2.5) * 50;
         const power = Math.max(
           0,
@@ -1032,12 +1003,10 @@
         let efficiency =
           windSpeed > 2.5 ? 35 * Math.exp(-Math.pow(windSpeed - 10, 2) / 8) : 0;
 
-        // Update Telemetry UI
         powerDisplay.textContent = power.toFixed(1);
         effDisplay.textContent = efficiency.toFixed(0);
         effBar.style.width = (efficiency / 35) * 100 + "%";
 
-        // Tree Sway based on wind
         trees.forEach((tree, index) => {
           const sway =
             Math.sin(time * 0.001 * (windSpeed / 2) + index) *
@@ -1046,12 +1015,10 @@
           tree.userData.foliage.position.x = sway * 0.5;
         });
 
-        // Airflow Animation
         if (airflowGroup.visible) {
           windParticles.forEach((p) => {
             p.position.x += delta * windSpeed * p.userData.speed * 1.5;
             p.position.y += Math.sin(time * 0.005 + p.position.x) * 0.005;
-
             if (p.position.x > 6) {
               p.position.x = -15 - Math.random() * 5;
               p.position.y = 2 + Math.random() * 7;
@@ -1060,14 +1027,12 @@
           });
         }
 
-        // Weather Animation (Leaves/Snow falling)
         if (currentSeason !== "summer") {
           weatherParticles.forEach((p) => {
-            p.position.y -= delta * p.userData.speed * 2; // Falling speed
-            p.position.x += delta * windSpeed * 0.5; // Blown by wind
+            p.position.y -= delta * p.userData.speed * 2;
+            p.position.x += delta * windSpeed * 0.5;
             p.rotation.z += p.userData.rotSpeed;
             p.rotation.x += p.userData.rotSpeed;
-
             if (p.position.y < 0) {
               p.position.y = 15 + Math.random() * 5;
               p.position.x = (Math.random() - 0.5) * 60 + windSpeed * 2;
@@ -1076,7 +1041,6 @@
           });
         }
 
-        // Stress Visualization
         if (isStressVisible) {
           const stressLevel = Math.max(0, (windSpeed - 8) / 4);
           hubMat.color.setRGB(stressLevel, 1 - stressLevel, 0);
@@ -1087,7 +1051,6 @@
           hubMat.emissive.setRGB(0, 0, 0);
         }
 
-        // Update Graph every ~0.5s
         timeAccumulator += delta;
         if (timeAccumulator > 0.5) {
           timeAccumulator = 0;
@@ -1102,11 +1065,21 @@
       }
 
       function drawGraph() {
-        const w = graphCanvas.width;
-        const h = graphCanvas.height;
+        const dpr = window.devicePixelRatio || 1;
+        const rect = graphCanvas.getBoundingClientRect();
+        if (
+          graphCanvas.width !== rect.width * dpr ||
+          graphCanvas.height !== rect.height * dpr
+        ) {
+          graphCanvas.width = rect.width * dpr;
+          graphCanvas.height = rect.height * dpr;
+        }
+        const w = rect.width;
+        const h = rect.height;
+        graphCtx.save();
+        graphCtx.scale(dpr, dpr);
         graphCtx.clearRect(0, 0, w, h);
 
-        // Background grid
         graphCtx.strokeStyle = "#e2e8f0";
         graphCtx.lineWidth = 1;
         for (let i = 0; i < 4; i++) {
@@ -1116,31 +1089,29 @@
           graphCtx.stroke();
         }
 
-        // Line
         graphCtx.strokeStyle = "#059669";
         graphCtx.lineWidth = 2;
         graphCtx.beginPath();
-
         powerHistory.forEach((p, i) => {
           const x = (i / (powerHistory.length - 1)) * w;
-          const y = h - (p / 60) * h; // 60W max scale
+          const y = h - (p / 60) * h;
           if (i === 0) graphCtx.moveTo(x, y);
           else graphCtx.lineTo(x, y);
         });
         graphCtx.stroke();
 
-        // Fill Area
         graphCtx.lineTo(w, h);
         graphCtx.lineTo(0, h);
         graphCtx.closePath();
         graphCtx.fillStyle = "rgba(5, 150, 105, 0.1)";
         graphCtx.fill();
+        graphCtx.restore();
       }
 
       window.addEventListener("resize", () => {
-        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
       animate(0);
