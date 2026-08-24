@@ -101,7 +101,7 @@ Wind-Turbine---Applied-Physics-Project/
 └── docs/                 # Project documentation and design concepts
 ```
 
-````
+```
 
 ---
 
@@ -125,8 +125,4 @@ This project is highly useful for:
 ---
 
 _Feel free to explore the individual HTML designs and adapt the project further for more advanced simulations or academic presentations._
-
 ```
-
-```
-````
