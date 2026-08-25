@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AEROSIM 3D | Wind Turbine Physics Designer</title>
+    <title>3D Wind Turbine Physics Simulator & Designer</title>
     <meta
       name="description"
       content="Explore wind turbine performance with AEROSIM 3D, an interactive environmental wind physics simulator."
@@ -48,571 +48,372 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --bg-app: #f4f5f7;
-        --bg-panel: rgba(255, 255, 255, 0.85);
-        --bg-card: rgba(248, 250, 252, 0.9);
-        --border-light: rgba(15, 23, 42, 0.08);
-        --border-dark: rgba(15, 23, 42, 0.15);
-        --text-main: #0f172a;
-        --text-dim: #64748b;
-        --accent-green: #059669;
-        --accent-green-hover: #047857;
-        --accent-light: #d1fae5;
-        --shadow-soft: 0 10px 30px -10px rgba(15, 23, 42, 0.1);
+        --bg-graphite: #1a1a1a;
+        --bg-panel: #222222;
+        --steel-grey: #71797e;
+        --ivory: #fffff0;
+        --energy-green: #39ff14;
+        --text-main: #e0e0e0;
+        --text-muted: #8a8a8a;
       }
-
-      * {
-        box-sizing: border-box;
-      }
-
       body {
-        font-family: "Space Grotesk", sans-serif;
-        background-color: var(--bg-app);
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-graphite);
         color: var(--text-main);
         overflow: hidden;
-        margin: 0;
-        height: 100vh;
       }
-
-      /* Blueprint Grid Background for Light Mode */
-      .grid-bg {
-        background-color: var(--bg-app);
-        background-image:
-          linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-          linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
-        background-size:
-          20px 20px,
-          20px 20px,
-          100px 100px,
-          100px 100px;
-      }
-
-      .glass-panel {
-        background: var(--bg-panel);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-soft);
-      }
-
       h1,
       h2,
       h3,
       .heading {
-        font-family: "Space Grotesk", sans-serif;
-        letter-spacing: -0.02em;
+        font-family: "Orbitron", sans-serif;
       }
-
       .mono {
         font-family: "JetBrains Mono", monospace;
       }
-
-      /* Buttons */
-      .btn-action {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid var(--border-dark);
-        background: #ffffff;
-        color: var(--text-main);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      .grid-bg {
+        background-color: var(--bg-graphite);
+        background-image:
+          linear-gradient(rgba(113, 121, 126, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(113, 121, 126, 0.1) 1px, transparent 1px);
+        background-size: 40px 40px;
       }
-      .btn-action:hover {
-        border-color: var(--accent-green);
-        color: var(--accent-green-hover);
-        background: var(--accent-light);
+      .btn-control {
+        transition: all 0.3s ease;
+        border: 1px solid var(--steel-grey);
+      }
+      .btn-control:hover {
+        border-color: var(--energy-green);
+        color: var(--energy-green);
+        box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
       }
       .btn-active {
-        border-color: var(--accent-green);
-        color: #ffffff;
-        background: var(--accent-green);
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        background-color: var(--energy-green);
+        color: var(--bg-graphite);
+        border-color: var(--energy-green);
       }
-
-      /* Sliders */
       .slider {
         -webkit-appearance: none;
         appearance: none;
-        width: 100%;
-        height: 6px;
-        background: #e2e8f0;
+        height: 4px;
+        background: var(--steel-grey);
         outline: none;
-        border-radius: 6px;
+        border-radius: 2px;
       }
       .slider::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
-        width: 18px;
-        height: 18px;
-        background: #ffffff;
+        width: 16px;
+        height: 16px;
+        background: var(--energy-green);
         cursor: pointer;
         border-radius: 50%;
-        border: 2px solid var(--accent-green);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.1s;
+        box-shadow: 0 0 5px var(--energy-green);
       }
-      .slider::-webkit-slider-thumb:hover {
-        transform: scale(1.1);
-      }
-      .slider::-moz-range-thumb {
-        width: 18px;
-        height: 18px;
-        background: #ffffff;
-        cursor: pointer;
-        border-radius: 50%;
-        border: 2px solid var(--accent-green);
-      }
-
-      /* Right Panel Animation */
       .panel-right {
-        transform: translateX(110%);
-        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       }
       .panel-right.open {
         transform: translateX(0);
       }
-
-      /* PDF Overlay */
       .pdf-overlay {
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.5s ease;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
       }
       .pdf-overlay.active {
         opacity: 1;
         pointer-events: auto;
       }
-
-      .draw-path {
+      .pdf-line {
         stroke-dasharray: 1000;
         stroke-dashoffset: 1000;
-        animation: drawLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: drawLine 1.5s ease-out forwards;
       }
       @keyframes drawLine {
         to {
           stroke-dashoffset: 0;
         }
       }
-
       .glow-text {
-        text-shadow: 0 0 12px rgba(5, 150, 105, 0.2);
-      }
-
-      /* Scrollbar Styling */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
       }
     </style>
   </head>
   <body class="grid-bg flex flex-col h-screen">
     <!-- Top Navigation -->
     <header
-      class="absolute top-0 left-0 right-0 z-30 glass-panel m-4 rounded-2xl p-4 flex justify-between items-center"
+      class="bg-[var(--bg-panel)] border-b border-[var(--steel-grey)] py-3 px-6 flex justify-between items-center z-10"
     >
-      <div class="flex items-center gap-4">
-        <div
-          class="w-10 h-10 rounded-xl bg-[var(--accent-green)] flex items-center justify-center shadow-lg shadow-emerald-500/30"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#ffffff"
-            stroke-width="2.5"
-          >
-            <path d="M12 2L12 22M2 12L22 12M5 5L19 19M19 5L5 19" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-xl font-bold tracking-wide text-[var(--text-main)]">
-            AERO<span class="text-[var(--accent-green)]">SIM</span> 3D
-          </h1>
-          <p
-            class="text-[10px] text-[var(--text-dim)] mono uppercase tracking-widest"
-          >
-            Renewable Energy Prototyping Suite
-          </p>
-        </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-wider text-[var(--ivory)]">
+          AERO<span class="text-[var(--energy-green)]">SIM</span> 3D
+        </h1>
+        <p class="text-xs text-[var(--text-muted)]">
+          Wind Turbine Physics Prototype Designer
+        </p>
       </div>
-      <div class="flex gap-3 items-center">
+      <div class="flex gap-4 items-center">
         <button
           id="viewToggle"
-          class="btn-action px-5 py-2.5 text-xs font-medium rounded-xl uppercase tracking-wider flex items-center gap-2"
+          class="btn-control px-4 py-2 text-sm rounded uppercase tracking-wider"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-          Blueprint Mode
+          Switch to 2D Blueprint
         </button>
         <button
           id="exportBtn"
-          class="btn-action px-5 py-2.5 text-xs font-medium rounded-xl uppercase tracking-wider flex items-center gap-2"
+          class="btn-control px-4 py-2 text-sm rounded uppercase tracking-wider"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-            />
-          </svg>
-          Export Sheet
+          Export to PDF
         </button>
       </div>
     </header>
 
     <nav
       aria-label="Simulator navigation"
-      class="fixed top-36 right-4 z-40 flex w-36 flex-col gap-1 rounded-2xl border border-slate-200/20 bg-slate-950/80 p-1.5 shadow-lg backdrop-blur-sm"
+      class="fixed top-36 right-4 z-40 flex w-36 flex-col gap-1 rounded-2xl border border-white/20 bg-black/75 p-1.5 shadow-lg backdrop-blur-sm"
     >
       <a
         href="index.html"
-        class="rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 transition hover:bg-white/10 hover:text-white"
+        class="rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-300 transition hover:bg-white/10 hover:text-white"
         >Overview</a
       >
       <a
         href="Desgin1.html"
-        class="rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 transition hover:bg-white/10 hover:text-white"
+        aria-current="page"
+        class="rounded-full bg-green-400 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-black"
         >Simulator 1</a
       >
       <a
         href="Desgin2.html"
-        class="rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 transition hover:bg-white/10 hover:text-white"
+        class="rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-300 transition hover:bg-white/10 hover:text-white"
         >Simulator 2</a
       >
       <a
         href="Desgin3.html"
-        aria-current="page"
-        class="rounded-full bg-emerald-400 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-black"
+        class="rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-300 transition hover:bg-white/10 hover:text-white"
         >Simulator 3</a
       >
     </nav>
 
-    <!-- Main 3D Viewport -->
-    <main class="absolute inset-0 z-0">
-      <canvas id="threeCanvas" class="w-full h-full block"></canvas>
-    </main>
-
-    <!-- Left Floating Toolbar -->
-    <aside
-      class="absolute top-28 left-4 w-72 z-20 glass-panel rounded-2xl p-5 max-h-[calc(100vh-220px)] overflow-y-auto"
-    >
-      <div class="mb-6">
-        <h3
-          class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
-        >
-          Component Library
-        </h3>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <button class="btn-action px-3 py-2.5 rounded-xl text-left">
-            3m Tower
-          </button>
-          <button class="btn-action px-3 py-2.5 rounded-xl text-left">
-            12V Generator
-          </button>
-          <button class="btn-action px-3 py-2.5 rounded-xl text-left">
-            Regulator
-          </button>
-          <button class="btn-action px-3 py-2.5 rounded-xl text-left">
-            Inverter
-          </button>
-        </div>
-      </div>
-
-      <div class="mb-6">
-        <h3
-          class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
-        >
-          Blade Material
-        </h3>
-        <div class="flex flex-col gap-2 text-xs">
-          <button
-            id="matPlastic"
-            class="btn-action px-3 py-2.5 rounded-xl text-left flex justify-between items-center"
-          >
-            <span>Lightweight Plastic</span>
-            <span class="mono text-[10px] text-[var(--text-dim)]">2.5kg</span>
-          </button>
-          <button
-            id="matCarbon"
-            class="btn-action btn-active px-3 py-2.5 rounded-xl text-left flex justify-between items-center text-white"
-          >
-            <span>Carbon Fiber</span>
-            <span class="mono text-[10px] opacity-80">1.2kg</span>
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <h3
-          class="text-[10px] uppercase text-[var(--text-dim)] mb-3 tracking-widest font-bold"
-        >
-          Simulation Toggles
-        </h3>
-        <div class="flex flex-col gap-2 text-xs">
-          <button
-            id="airflowToggle"
-            class="btn-action px-3 py-2.5 rounded-xl text-left flex items-center gap-2"
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M3 12h4l3 9 4-18 3 9h4" />
-            </svg>
-            Show Airflow
-          </button>
-          <button
-            id="stressToggle"
-            class="btn-action px-3 py-2.5 rounded-xl text-left flex items-center gap-2"
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-              />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            Show Stress Map
-          </button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Right Floating Cost Panel -->
-    <aside
-      id="costPanel"
-      class="panel-right absolute top-28 right-4 bottom-40 w-80 z-20 glass-panel rounded-2xl p-6 overflow-y-auto"
-    >
-      <div class="flex justify-between items-center mb-8">
-        <div>
-          <h2 class="text-lg font-bold text-[var(--text-main)]">
-            Cost Estimator
-          </h2>
-          <p
-            class="text-[10px] text-[var(--text-dim)] mono uppercase tracking-widest"
-          >
-            Bill of Materials
-          </p>
-        </div>
-        <button
-          id="closeCost"
-          class="text-[var(--text-dim)] hover:text-[var(--text-main)] text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100"
-        >
-          ×
-        </button>
-      </div>
-
-      <div class="space-y-3 text-sm mb-8">
-        <div class="flex justify-between border-b border-slate-200 pb-3">
-          <div>
-            <div class="font-medium">Carbon Fiber Blades (x3)</div>
-            <div class="text-[10px] text-[var(--text-dim)] mono">
-              AERO-CF-3000
-            </div>
-          </div>
-          <span class="mono text-[var(--accent-green)] font-bold">$45.00</span>
-        </div>
-        <div class="flex justify-between border-b border-slate-200 pb-3">
-          <div>
-            <div class="font-medium">12V DC Generator</div>
-            <div class="text-[10px] text-[var(--text-dim)] mono">
-              PWR-GEN-12V
-            </div>
-          </div>
-          <span class="mono text-[var(--accent-green)] font-bold">$25.00</span>
-        </div>
-        <div class="flex justify-between border-b border-slate-200 pb-3">
-          <div>
-            <div class="font-medium">Tubular Steel Tower (3m)</div>
-            <div class="text-[10px] text-[var(--text-dim)] mono">
-              STR-TWR-3M
-            </div>
-          </div>
-          <span class="mono text-[var(--accent-green)] font-bold">$30.00</span>
-        </div>
-        <div class="flex justify-between border-b border-slate-200 pb-3">
-          <div>
-            <div class="font-medium">Voltage Regulator</div>
-            <div class="text-[10px] text-[var(--text-dim)] mono">
-              CTRL-REG-01
-            </div>
-          </div>
-          <span class="mono text-[var(--accent-green)] font-bold">$15.00</span>
-        </div>
-      </div>
-
-      <div class="border-t border-slate-300 pt-4">
-        <div class="flex justify-between text-sm text-[var(--text-dim)] mb-1">
-          <span>Subtotal</span>
-          <span class="mono">$115.00</span>
-        </div>
-        <div class="flex justify-between text-sm text-[var(--text-dim)] mb-4">
-          <span>Shipping & Tax</span>
-          <span class="mono">$18.50</span>
-        </div>
-        <div class="flex justify-between items-end">
-          <span class="heading text-lg text-[var(--text-main)]">Total</span>
-          <span class="mono text-2xl text-[var(--accent-green)] glow-text"
-            >$133.50</span
-          >
-        </div>
-      </div>
-
-      <button
-        class="btn-action btn-active w-full mt-8 py-3 rounded-xl uppercase tracking-wider text-xs font-bold"
+    <!-- Main Workspace -->
+    <main class="flex flex-grow overflow-hidden">
+      <!-- Left Toolbar -->
+      <aside
+        class="w-64 bg-[var(--bg-panel)] border-r border-[var(--steel-grey)] p-4 flex flex-col gap-6 overflow-y-auto"
       >
-        Export BOM PDF
-      </button>
-    </aside>
-
-    <!-- Bottom Telemetry HUD -->
-    <footer class="absolute bottom-0 left-0 right-0 z-20 p-4">
-      <div class="glass-panel rounded-2xl p-5 max-w-6xl mx-auto">
-        <div class="grid grid-cols-4 gap-8 items-center">
-          <!-- Wind Speed -->
-          <div>
-            <div
-              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
-            >
-              Wind Speed Control
-            </div>
-            <div class="flex items-baseline gap-1 mb-2">
-              <span
-                id="windDisplay"
-                class="text-3xl mono font-bold text-[var(--text-main)]"
-                >5.0</span
-              >
-              <span class="text-xs text-[var(--text-dim)] mono">m/s</span>
-            </div>
-            <input
-              id="windSlider"
-              type="range"
-              min="2"
-              max="12"
-              step="0.1"
-              value="5"
-              class="slider"
-            />
+        <div>
+          <h3
+            class="text-xs uppercase text-[var(--text-muted)] mb-3 tracking-widest"
+          >
+            Component Library
+          </h3>
+          <div class="flex flex-col gap-2 text-sm">
+            <button class="btn-control px-3 py-2 rounded text-left">
+              Standard Tower (3m)
+            </button>
+            <button class="btn-control px-3 py-2 rounded text-left">
+              12V DC Generator
+            </button>
+            <button class="btn-control px-3 py-2 rounded text-left">
+              Voltage Regulator
+            </button>
           </div>
+        </div>
 
-          <!-- RPM -->
-          <div class="border-l border-slate-200 pl-8">
-            <div
-              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
+        <div>
+          <h3
+            class="text-xs uppercase text-[var(--text-muted)] mb-3 tracking-widest"
+          >
+            Blade Material
+          </h3>
+          <div class="flex flex-col gap-2 text-sm">
+            <button
+              id="matPlastic"
+              class="btn-control px-3 py-2 rounded text-left"
             >
-              Rotor Speed
-            </div>
-            <div class="flex items-baseline gap-1 mb-2">
-              <span
-                id="rpmDisplay"
-                class="text-3xl mono font-bold text-[var(--text-main)]"
-                >0</span
-              >
-              <span class="text-xs text-[var(--text-dim)] mono">RPM</span>
-            </div>
-            <div class="w-full bg-slate-200 h-1.5 rounded mt-3 overflow-hidden">
+              Lightweight Plastic
+            </button>
+            <button
+              id="matCarbon"
+              class="btn-control px-3 py-2 rounded text-left btn-active"
+            >
+              Carbon Fiber
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3
+            class="text-xs uppercase text-[var(--text-muted)] mb-3 tracking-widest"
+          >
+            Safety & Flow
+          </h3>
+          <div class="flex flex-col gap-2 text-sm">
+            <button
+              id="airflowToggle"
+              class="btn-control px-3 py-2 rounded text-left"
+            >
+              Show Airflow
+            </button>
+            <button
+              id="stressToggle"
+              class="btn-control px-3 py-2 rounded text-left"
+            >
+              Show Structural Stress
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 3D Viewport -->
+      <section class="flex-grow relative bg-[var(--bg-graphite)]">
+        <canvas id="threeCanvas" class="w-full h-full"></canvas>
+
+        <!-- Bottom Performance HUD -->
+        <div
+          class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--bg-panel)] to-transparent p-6"
+        >
+          <div class="grid grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div>
               <div
-                id="rpmBar"
-                class="bg-[var(--text-main)] h-full rounded transition-all duration-200"
-                style="width: 40%"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Power Output -->
-          <div class="border-l border-slate-200 pl-8">
-            <div
-              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
-            >
-              Power Output
-            </div>
-            <div class="flex items-baseline gap-1 mb-2">
-              <span
-                id="powerDisplay"
-                class="text-3xl mono font-bold text-[var(--accent-green)] glow-text"
-                >0.0</span
+                class="text-xs text-[var(--text-muted)] uppercase tracking-wider"
               >
-              <span class="text-xs text-[var(--text-dim)] mono">Watts</span>
+                Wind Speed
+              </div>
+              <div class="text-3xl mono text-[var(--ivory)]">
+                <span id="windDisplay">5.0</span>
+                <span class="text-sm">m/s</span>
+              </div>
+              <input
+                id="windSlider"
+                type="range"
+                min="2"
+                max="12"
+                step="0.1"
+                value="5"
+                class="slider w-full mt-2"
+              />
             </div>
-            <div class="w-full bg-slate-200 h-1.5 rounded mt-3 overflow-hidden">
+            <div>
               <div
-                id="powerBar"
-                class="bg-[var(--accent-green)] h-full rounded transition-all duration-200"
-                style="width: 0%"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Efficiency -->
-          <div class="border-l border-slate-200 pl-8">
-            <div
-              class="text-[10px] text-[var(--text-dim)] uppercase tracking-widest mb-2 mono"
-            >
-              System Efficiency
-            </div>
-            <div class="flex items-baseline gap-1 mb-2">
-              <span
-                id="effDisplay"
-                class="text-3xl mono font-bold text-[var(--text-main)]"
-                >0</span
+                class="text-xs text-[var(--text-muted)] uppercase tracking-wider"
               >
-              <span class="text-xs text-[var(--text-dim)] mono">%</span>
+                Rotational Speed
+              </div>
+              <div class="text-3xl mono text-[var(--ivory)]">
+                <span id="rpmDisplay">0</span> <span class="text-sm">RPM</span>
+              </div>
+              <div class="w-full bg-[var(--steel-grey)] h-1 rounded mt-3">
+                <div
+                  id="rpmBar"
+                  class="bg-[var(--energy-green)] h-1 rounded"
+                  style="width: 40%"
+                ></div>
+              </div>
             </div>
-            <div class="text-[10px] text-[var(--text-dim)] mono">
-              PEAK TARGET: 35% @ 10m/s
+            <div>
+              <div
+                class="text-xs text-[var(--text-muted)] uppercase tracking-wider"
+              >
+                Power Output
+              </div>
+              <div class="text-3xl mono text-[var(--energy-green)] glow-text">
+                <span id="powerDisplay">0.0</span>
+                <span class="text-sm">W</span>
+              </div>
+              <div class="w-full bg-[var(--steel-grey)] h-1 rounded mt-3">
+                <div
+                  id="powerBar"
+                  class="bg-[var(--energy-green)] h-1 rounded"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div>
+              <div
+                class="text-xs text-[var(--text-muted)] uppercase tracking-wider"
+              >
+                Efficiency
+              </div>
+              <div class="text-3xl mono text-[var(--ivory)]">
+                <span id="effDisplay">0</span><span class="text-sm">%</span>
+              </div>
+              <div class="text-xs text-[var(--text-muted)] mt-2">
+                Peak target: 35% @ 10m/s
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </section>
+
+      <!-- Right Cost Estimator Panel -->
+      <aside
+        id="costPanel"
+        class="panel-right absolute right-0 top-16 bottom-0 w-80 bg-[var(--bg-panel)] border-l border-[var(--steel-grey)] p-6 z-20 overflow-y-auto"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg heading text-[var(--ivory)]">
+            Cost & Material Estimator
+          </h2>
+          <button
+            id="closeCost"
+            class="text-[var(--text-muted)] hover:text-[var(--ivory)] text-xl"
+          >
+            x
+          </button>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <div
+            class="flex justify-between border-b border-[var(--steel-grey)] pb-2"
+          >
+            <span>Carbon Fiber Blades (x3)</span>
+            <span class="mono text-[var(--energy-green)]">$45.00</span>
+          </div>
+          <div
+            class="flex justify-between border-b border-[var(--steel-grey)] pb-2"
+          >
+            <span>12V DC Generator</span>
+            <span class="mono text-[var(--energy-green)]">$25.00</span>
+          </div>
+          <div
+            class="flex justify-between border-b border-[var(--steel-grey)] pb-2"
+          >
+            <span>Steel Tubular Tower (3m)</span>
+            <span class="mono text-[var(--energy-green)]">$30.00</span>
+          </div>
+          <div
+            class="flex justify-between border-b border-[var(--steel-grey)] pb-2"
+          >
+            <span>Voltage Regulator & Wiring</span>
+            <span class="mono text-[var(--energy-green)]">$15.00</span>
+          </div>
+          <div class="flex justify-between pt-4 text-lg">
+            <span class="heading">Total Prototype Cost</span>
+            <span class="mono text-[var(--energy-green)]">$115.00</span>
+          </div>
+        </div>
+
+        <button
+          class="btn-control w-full mt-8 py-2 rounded uppercase tracking-wider text-xs"
+        >
+          Generate BOM
+        </button>
+      </aside>
+    </main>
 
     <a
       href="https://abdulbasit-archer.vercel.app/"
       target="_blank"
       rel="noreferrer"
-      class="fixed top-24 right-4 z-40 rounded-full border border-[var(--accent-green)] bg-white/80 px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--text-main)] shadow-[0_6px_18px_rgba(15,23,42,0.08)] backdrop-blur-sm transition hover:text-[var(--accent-green-hover)]"
+      class="fixed top-24 right-4 z-40 rounded-full border border-[var(--energy-green)] bg-[rgba(26,26,26,0.82)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--ivory)] shadow-[0_0_12px_rgba(57,255,20,0.18)] backdrop-blur-sm transition hover:text-[var(--energy-green)]"
     >
       Powered By ARCHER
     </a>
@@ -620,146 +421,73 @@
     <!-- PDF Export Animation Overlay -->
     <div
       id="pdfOverlay"
-      class="pdf-overlay absolute inset-0 z-50 flex items-center justify-center"
+      class="pdf-overlay absolute inset-0 bg-[var(--bg-graphite)] z-50 flex items-center justify-center"
     >
-      <svg width="600" height="400" viewBox="0 0 600 400">
+      <svg width="400" height="500" viewBox="0 0 400 500">
+        <!-- Blueprint layout building up -->
         <rect
           x="20"
           y="20"
-          width="560"
-          height="360"
+          width="360"
+          height="460"
           fill="none"
-          stroke="#0f172a"
-          stroke-width="1"
-          class="draw-path"
-          opacity="0.6"
+          stroke="#39FF14"
+          stroke-width="2"
+          class="pdf-line"
         />
         <line
           x1="20"
-          y1="60"
-          x2="580"
-          y2="60"
-          stroke="#0f172a"
+          y1="80"
+          x2="380"
+          y2="80"
+          stroke="#39FF14"
           stroke-width="1"
-          class="draw-path"
-          opacity="0.6"
+          class="pdf-line"
         />
         <line
-          x1="300"
-          y1="60"
-          x2="300"
-          y2="380"
-          stroke="#cbd5e1"
+          x1="20"
+          y1="420"
+          x2="380"
+          y2="420"
+          stroke="#39FF14"
           stroke-width="1"
-          class="draw-path"
-          opacity="0.6"
+          class="pdf-line"
         />
-
-        <!-- Turbine Schematic -->
-        <path
-          d="M 150 320 L 150 120 L 170 100 L 170 90 L 210 90 L 210 100 L 230 120 L 230 320 Z"
-          fill="none"
-          stroke="#0f172a"
-          stroke-width="1.5"
-          class="draw-path"
+        <line
+          x1="200"
+          y1="80"
+          x2="200"
+          y2="420"
+          stroke="#71797E"
+          stroke-width="1"
+          class="pdf-line"
         />
         <path
-          d="M 190 90 L 150 20 M 190 90 L 250 30 M 190 90 L 130 30"
+          d="M 100 300 L 200 100 L 300 300 Z"
           fill="none"
-          stroke="#0f172a"
+          stroke="#FFFFF0"
           stroke-width="1.5"
-          class="draw-path"
+          class="pdf-line"
         />
-        <circle cx="190" cy="90" r="5" fill="#059669" class="draw-path" />
-
-        <!-- Data block -->
-        <line
-          x1="320"
-          y1="100"
-          x2="560"
-          y2="100"
-          stroke="#cbd5e1"
-          stroke-width="1"
-          class="draw-path"
-        />
-        <line
-          x1="320"
-          y1="140"
-          x2="560"
-          y2="140"
-          stroke="#cbd5e1"
-          stroke-width="1"
-          class="draw-path"
-        />
-        <line
-          x1="320"
-          y1="180"
-          x2="560"
-          y2="180"
-          stroke="#cbd5e1"
-          stroke-width="1"
-          class="draw-path"
-        />
-        <line
-          x1="320"
-          y1="220"
-          x2="560"
-          y2="220"
-          stroke="#cbd5e1"
-          stroke-width="1"
-          class="draw-path"
-        />
-
         <text
-          x="320"
-          y="90"
-          fill="#0f172a"
-          font-family="Space Grotesk"
-          font-size="16"
-          font-weight="bold"
-          class="draw-path"
+          x="150"
+          y="50"
+          fill="#FFFFF0"
+          font-family="Orbitron"
+          font-size="14"
+          class="pdf-line"
         >
-          LAYOUT SHEET
+          TURBINE LAYOUT SHEET
         </text>
         <text
-          x="320"
-          y="130"
-          fill="#64748b"
+          x="30"
+          y="450"
+          fill="#39FF14"
           font-family="JetBrains Mono"
-          font-size="12"
-          class="draw-path"
+          font-size="10"
+          class="pdf-line"
         >
-          PROJECT: AEROSIM 3D
-        </text>
-        <text
-          x="320"
-          y="170"
-          fill="#64748b"
-          font-family="JetBrains Mono"
-          font-size="12"
-          class="draw-path"
-        >
-          MATERIAL: CARBON FIBER
-        </text>
-        <text
-          x="320"
-          y="210"
-          fill="#059669"
-          font-family="JetBrains Mono"
-          font-size="12"
-          class="draw-path"
-        >
-          PEAK POWER: 50W
-        </text>
-        <text
-          x="320"
-          y="250"
-          fill="#64748b"
-          font-family="JetBrains Mono"
-          font-size="12"
-          class="draw-path"
-        >
-          DATE: 2026
+          PROJ: AEROSIM 3D | DATE: 2026
         </text>
       </svg>
     </div>
@@ -779,201 +507,161 @@
       // Scene Setup
       const canvas = document.getElementById("threeCanvas");
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xeef1f6); // Match CSS bg
-      scene.fog = new THREE.Fog(0xeef1f6, 25, 60);
+      scene.background = new THREE.Color(0x1a1a1a);
+      scene.fog = new THREE.Fog(0x1a1a1a, 15, 45);
 
       const camera = new THREE.PerspectiveCamera(
-        45,
+        50,
         canvas.clientWidth / canvas.clientHeight,
         0.1,
         1000,
       );
-      const cam3DPos = new THREE.Vector3(10, 7, 12);
-      const cam2DPos = new THREE.Vector3(0, 20, 0.01);
+      const cam3DPos = new THREE.Vector3(8, 6, 10);
+      const cam2DPos = new THREE.Vector3(0, 15, 0.01);
       camera.position.copy(cam3DPos);
 
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: true,
-      });
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
       renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping; // Realistic exposure
-      renderer.toneMappingExposure = 1.1;
+      renderer.setPixelRatio(window.devicePixelRatio);
 
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.target.set(0, 4, 0);
-      controls.maxPolarAngle = Math.PI / 2 - 0.05;
-      controls.minDistance = 5;
-      controls.maxDistance = 30;
+      controls.target.set(0, 3, 0);
 
-      // Lighting Setup (Realistic Daylight)
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x888888, 0.6);
-      scene.add(hemiLight);
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambientLight);
 
-      const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-      keyLight.position.set(8, 15, 10);
-      keyLight.castShadow = true;
-      keyLight.shadow.mapSize.width = 2048;
-      keyLight.shadow.mapSize.height = 2048;
-      keyLight.shadow.camera.near = 0.5;
-      keyLight.shadow.camera.far = 50;
-      keyLight.shadow.camera.left = -15;
-      keyLight.shadow.camera.right = 15;
-      keyLight.shadow.camera.top = 15;
-      keyLight.shadow.camera.bottom = -15;
-      keyLight.shadow.bias = -0.0001;
-      scene.add(keyLight);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(5, 10, 7);
+      scene.add(dirLight);
 
-      const rimLight = new THREE.DirectionalLight(0xc0e8ff, 0.8); // Soft sky blue rim light
-      rimLight.position.set(-10, 5, -10);
-      scene.add(rimLight);
-
-      // Ground Mesh (Soft Matte Surface)
-      const groundGeo = new THREE.PlaneGeometry(80, 80, 80, 80);
-      const groundMat = new THREE.MeshStandardMaterial({
-        color: 0xf1f5f9,
-        metalness: 0.0,
-        roughness: 0.9,
+      // Ground Mesh (Aerodynamic grid)
+      const groundGeo = new THREE.PlaneGeometry(40, 40, 40, 40);
+      const groundMat = new THREE.MeshBasicMaterial({
+        color: 0x222222,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.3,
       });
       const ground = new THREE.Mesh(groundGeo, groundMat);
       ground.rotation.x = -Math.PI / 2;
-      ground.receiveShadow = true;
       scene.add(ground);
 
-      // Subtle grid overlay
-      const gridHelper = new THREE.GridHelper(80, 40, 0xd1d5db, 0xe2e8f0);
-      gridHelper.position.y = 0.01;
-      scene.add(gridHelper);
-
-      // Turbine Construction
+      // Wind Turbine Components
       const turbineGroup = new THREE.Group();
       scene.add(turbineGroup);
 
-      // Tower (Tapered Concrete/Steel)
-      const towerGeo = new THREE.CylinderGeometry(0.18, 0.35, 8, 32);
+      // Tower
+      const towerGeo = new THREE.CylinderGeometry(0.1, 0.15, 6, 12);
       const towerMat = new THREE.MeshStandardMaterial({
-        color: 0xe2e8f0,
-        metalness: 0.1,
-        roughness: 0.7,
+        color: 0x71797e,
+        metalness: 0.8,
+        roughness: 0.4,
       });
       const tower = new THREE.Mesh(towerGeo, towerMat);
-      tower.position.y = 4;
-      tower.castShadow = true;
-      tower.receiveShadow = true;
+      tower.position.y = 3;
       turbineGroup.add(tower);
 
-      // Nacelle (Housing)
-      const nacelleGeo = new THREE.BoxGeometry(0.7, 0.5, 1.5);
+      // Nacelle (Generator Housing)
+      const nacelleGeo = new THREE.BoxGeometry(0.4, 0.3, 0.8);
       const nacelleMat = new THREE.MeshStandardMaterial({
-        color: 0xf8fafc,
-        metalness: 0.5,
-        roughness: 0.3,
-      });
-      const nacelle = new THREE.Mesh(nacelleGeo, nacelleMat);
-      nacelle.position.set(0, 8.1, 0.3);
-      nacelle.castShadow = true;
-      turbineGroup.add(nacelle);
-
-      // Hub
-      const hubGeo = new THREE.SphereGeometry(0.3, 32, 32);
-      const hubMat = new THREE.MeshStandardMaterial({
-        color: 0x059669,
-        metalness: 0.6,
+        color: 0x383838,
+        metalness: 0.9,
         roughness: 0.2,
       });
+      const nacelle = new THREE.Mesh(nacelleGeo, nacelleMat);
+      nacelle.position.set(0, 6, 0);
+      turbineGroup.add(nacelle);
+
+      // Hub and Blades
+      const hubGeo = new THREE.SphereGeometry(0.15, 16, 16);
+      const hubMat = new THREE.MeshStandardMaterial({
+        color: 0x39ff14,
+        emissive: 0x39ff14,
+        emissiveIntensity: 0.5,
+      });
       const hub = new THREE.Mesh(hubGeo, hubMat);
-      hub.position.set(0, 8.1, 1.05);
-      hub.castShadow = true;
+      hub.position.set(0, 6, 0.4);
       turbineGroup.add(hub);
 
-      // Blades Group
       const bladeGroup = new THREE.Group();
-      bladeGroup.position.set(0, 8.1, 1.05);
+      bladeGroup.position.set(0, 6, 0.4);
       turbineGroup.add(bladeGroup);
 
-      // Blade Geometry (Realistic shape)
+      // Blade Profile Geometry (simplified flat airfoil)
       const bladeShape = new THREE.Shape();
       bladeShape.moveTo(0, 0);
-      bladeShape.bezierCurveTo(0.5, 1, 0.6, 3, 0.15, 4.8);
-      bladeShape.bezierCurveTo(0, 5.1, -0.2, 5.1, -0.25, 4.8);
-      bladeShape.bezierCurveTo(0.1, 3, -0.1, 1, 0, 0);
+      bladeShape.lineTo(0.3, 2.5);
+      bladeShape.lineTo(0.1, 2.8);
+      bladeShape.lineTo(0, 2.8);
+      bladeShape.lineTo(0, 0);
 
       const bladeGeo = new THREE.ExtrudeGeometry(bladeShape, {
-        depth: 0.12,
-        bevelEnabled: true,
-        bevelThickness: 0.06,
-        bevelSize: 0.06,
-        bevelSegments: 4,
+        depth: 0.05,
+        bevelEnabled: false,
       });
-      bladeGeo.translate(-0.1, 0, -0.06);
-      bladeGeo.rotateZ(-0.3); // Pitch angle
+      bladeGeo.translate(-0.1, 0, -0.025); // Center the pivot at root
 
       const bladeMatCarbon = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        metalness: 0.4,
+        color: 0x111111,
+        metalness: 0.7,
         roughness: 0.3,
+        emissive: 0x000000,
       });
       const bladeMatPlastic = new THREE.MeshStandardMaterial({
-        color: 0xe2e8f0,
+        color: 0xcccccc,
         metalness: 0.1,
-        roughness: 0.6,
+        roughness: 0.8,
+        emissive: 0x000000,
       });
+
       let currentBladeMat = bladeMatCarbon;
 
       for (let i = 0; i < 3; i++) {
         const blade = new THREE.Mesh(bladeGeo, currentBladeMat);
         blade.rotation.z = (i * 2 * Math.PI) / 3;
-        blade.castShadow = true;
         bladeGroup.add(blade);
       }
 
-      // AIRFLOW SYSTEM FIX: High-visibility directional spheres
-      const airflowGroup = new THREE.Group();
-      scene.add(airflowGroup);
-      const windParticles = [];
-      const particleCount = 60;
-
-      // Create custom particle mesh for better visibility
-      const particleGeo = new THREE.SphereGeometry(0.08, 8, 8);
-      const particleMat = new THREE.MeshBasicMaterial({
-        color: 0x10b981,
+      // Airflow Arrows
+      const arrowGroup = new THREE.Group();
+      scene.add(arrowGroup);
+      const arrowMat = new THREE.LineBasicMaterial({
+        color: 0x39ff14,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.6,
       });
 
-      for (let i = 0; i < particleCount; i++) {
-        const particle = new THREE.Mesh(particleGeo, particleMat.clone());
-
-        // Spread them vertically and in depth, but start them on the X axis behind the turbine
-        particle.position.set(
-          -10 - Math.random() * 15, // X: -10 to -25
-          2 + Math.random() * 7, // Y: 2 to 9 (blades area)
-          (Math.random() - 0.5) * 5, // Z: -2.5 to 2.5
+      for (let i = 0; i < 20; i++) {
+        const points = [];
+        points.push(
+          new THREE.Vector3(
+            -10,
+            Math.random() * 8 + 1,
+            (Math.random() - 0.5) * 4,
+          ),
         );
-
-        // Random speed multiplier
-        particle.userData.speed = 1 + Math.random() * 0.5;
-        particle.userData.startX = -10 - Math.random() * 15;
-
-        airflowGroup.add(particle);
-        windParticles.push(particle);
+        points.push(
+          new THREE.Vector3(
+            -5,
+            Math.random() * 8 + 1,
+            (Math.random() - 0.5) * 4,
+          ),
+        );
+        const geo = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geo, arrowMat);
+        arrowGroup.add(line);
       }
-      airflowGroup.visible = false;
+      arrowGroup.visible = false;
 
       // State Variables
       let is3DView = true;
       let windSpeed = 5.0;
       let rotationSpeed = 0;
       let isStressVisible = false;
-      let isCameraAnimating = false;
 
-      // UI Elements
+      // UI Controls
       const windSlider = document.getElementById("windSlider");
       const windDisplay = document.getElementById("windDisplay");
       const rpmDisplay = document.getElementById("rpmDisplay");
@@ -989,18 +677,17 @@
 
       document.getElementById("viewToggle").addEventListener("click", (e) => {
         is3DView = !is3DView;
-        e.currentTarget.innerHTML = is3DView
-          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Blueprint Mode'
-          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 3D Simulation';
+        e.target.textContent = is3DView
+          ? "Switch to 2D Blueprint"
+          : "Switch to 3D Simulation";
 
-        isCameraAnimating = true;
-
-        // Blueprint materials adjustment
+        // Toggle materials for blueprint effect
         towerMat.wireframe = !is3DView;
         nacelleMat.wireframe = !is3DView;
         hubMat.wireframe = !is3DView;
         currentBladeMat.wireframe = !is3DView;
-        gridHelper.visible = !is3DView; // Show grid in blueprint mode
+        groundMat.opacity = is3DView ? 0.3 : 0.1;
+        scene.background = new THREE.Color(is3DView ? 0x1a1a1a : 0x0a0a0a);
       });
 
       document.getElementById("matPlastic").addEventListener("click", () => {
@@ -1018,7 +705,7 @@
       function swapBladeMaterial(newMat) {
         bladeGroup.children.forEach((blade) => {
           blade.material = newMat;
-          blade.material.wireframe = !is3DView;
+          blade.material.wireframe = !is3DView; // maintain current view state
         });
         currentBladeMat = newMat;
       }
@@ -1026,66 +713,63 @@
       document
         .getElementById("airflowToggle")
         .addEventListener("click", (e) => {
-          airflowGroup.visible = !airflowGroup.visible;
-          e.currentTarget.classList.toggle("btn-active");
+          arrowGroup.visible = !arrowGroup.visible;
+          e.target.classList.toggle("btn-active");
         });
 
       document.getElementById("stressToggle").addEventListener("click", (e) => {
         isStressVisible = !isStressVisible;
-        e.currentTarget.classList.toggle("btn-active");
+        e.target.classList.toggle("btn-active");
       });
 
+      // Cost Panel Logic
       const costPanel = document.getElementById("costPanel");
       document.getElementById("exportBtn").addEventListener("click", () => {
         costPanel.classList.add("open");
+
+        // Trigger PDF Animation
         const overlay = document.getElementById("pdfOverlay");
         overlay.classList.add("active");
+
+        // Restart SVG animation by re-injecting
         const svg = overlay.querySelector("svg");
         svg.innerHTML = svg.innerHTML;
-        setTimeout(() => overlay.classList.remove("active"), 2500);
-      });
 
+        setTimeout(() => {
+          overlay.classList.remove("active");
+        }, 2500);
+      });
       document.getElementById("closeCost").addEventListener("click", () => {
         costPanel.classList.remove("open");
       });
 
       // Animation Loop
       let lastTime = 0;
-      let lerpFactor = 0;
+      let airflowOffset = 0;
 
       function animate(time) {
-        const delta = Math.min((time - lastTime) / 1000, 0.1); // Cap delta to prevent jumps
+        const delta = (time - lastTime) / 1000;
         lastTime = time;
 
-        // Camera Transition
-        if (isCameraAnimating) {
-          lerpFactor += delta * 2;
-          if (lerpFactor > 1) lerpFactor = 1;
-
-          const targetPos = is3DView ? cam3DPos : cam2DPos;
-          camera.position.lerp(targetPos, 0.05);
-
-          if (lerpFactor >= 0.95) {
-            camera.position.copy(targetPos);
-            isCameraAnimating = false;
-            lerpFactor = 0;
-          }
-        }
-
-        // Physics & Telemetry
+        // Physics calculations (simplified mapped models)
+        // Base scaling: wind speed 2-12 m/s -> RPM 10-120
         const targetRPM = windSpeed < 3 ? 0 : (windSpeed - 2) * 12;
         rotationSpeed += (targetRPM - rotationSpeed) * 0.05;
         bladeGroup.rotation.z += (rotationSpeed / 60) * Math.PI * 2 * delta;
 
+        // Power Calculation (Max 50W at 10m/s, mapped roughly to cubic)
+        // P = 0.5 * rho * A * v^3 * Cp. Let's simulate this curve.
         let power = 0;
         if (windSpeed > 2.5) {
           power = Math.pow((windSpeed - 2.5) / 7.5, 2.5) * 50;
           power = Math.min(power, 50);
         }
 
+        // Efficiency Calculation (Peaks at 10m/s around 35%)
         let efficiency =
           windSpeed > 2.5 ? 35 * Math.exp(-Math.pow(windSpeed - 10, 2) / 8) : 0;
 
+        // Update UI
         rpmDisplay.textContent = Math.round(rotationSpeed);
         powerDisplay.textContent = power.toFixed(1);
         effDisplay.textContent = efficiency.toFixed(0);
@@ -1093,41 +777,34 @@
         rpmBar.style.width = (rotationSpeed / 120) * 100 + "%";
         powerBar.style.width = (power / 50) * 100 + "%";
 
-        // Airflow Animation (Fixed & Highly Visible)
-        if (airflowGroup.visible) {
-          windParticles.forEach((p) => {
-            // Move particle along X (wind direction)
-            p.position.x += delta * windSpeed * p.userData.speed * 1.5;
+        // Airflow animation
+        if (arrowGroup.visible) {
+          airflowOffset += delta * windSpeed;
+          arrowGroup.children.forEach((line, index) => {
+            let p1 = line.geometry.attributes.position.array;
+            // Move points along X based on wind speed
+            p1[0] += delta * windSpeed * 2;
+            p1[3] += delta * windSpeed * 2;
 
-            // Add slight turbulence based on Z position to make it look fluid
-            p.position.y += Math.sin(time * 0.005 + p.position.x) * 0.005;
-
-            // Fade in when starting, fade out when hitting turbine
-            const distToTurbine = p.position.x + 5; // -5 is the turbine X center
-            if (distToTurbine < 2 && distToTurbine > -2) {
-              p.material.opacity = 0.2; // Hide as it "hits" the hub
-            } else if (p.position.x > -2) {
-              p.material.opacity = 0.7; // Reappear behind turbine
+            // Reset if out of bounds
+            if (p1[0] > 10) {
+              p1[0] = -10 + Math.random() * 2;
+              p1[3] = -5 + (p1[0] + 5);
             }
-
-            // Reset particle if it goes too far right
-            if (p.position.x > 12) {
-              p.position.x = -15 - Math.random() * 5;
-              p.position.y = 2 + Math.random() * 7;
-              p.position.z = (Math.random() - 0.5) * 5;
-            }
+            line.geometry.attributes.position.needsUpdate = true;
           });
         }
 
-        // Stress Visualization
+        // Stress Visualization (emissive red glow on hub/blades at high RPM)
         if (isStressVisible) {
-          const stressLevel = Math.max(0, (windSpeed - 8) / 4);
-          hubMat.color.setRGB(stressLevel, 1 - stressLevel, 0);
-          hubMat.emissive.setRGB(stressLevel, 1 - stressLevel, 0);
-          hubMat.emissiveIntensity = 0.3 + stressLevel * 0.5;
+          const stressLevel = Math.max(0, (windSpeed - 8) / 4); // Ramps up from 8m/s to 12m/s
+          hubMat.emissive.setRGB(stressLevel, 0.2, 0);
+          hubMat.emissiveIntensity = stressLevel * 2;
+          currentBladeMat.emissive.setRGB(stressLevel * 0.5, 0, 0);
         } else {
-          hubMat.color.setHex(0x059669);
-          hubMat.emissive.setRGB(0, 0, 0);
+          hubMat.emissive.setRGB(0, 1, 0); // Reset to green
+          hubMat.emissiveIntensity = 0.5;
+          currentBladeMat.emissive.setRGB(0, 0, 0);
         }
 
         controls.update();
@@ -1135,11 +812,11 @@
         requestAnimationFrame(animate);
       }
 
+      // Handle Resize
       window.addEventListener("resize", () => {
         camera.aspect = canvas.clientWidth / canvas.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       });
 
       animate(0);
